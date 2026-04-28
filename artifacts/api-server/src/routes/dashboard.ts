@@ -101,4 +101,27 @@ router.get("/driver-stats", async (_req, res) => {
   })));
 });
 
+router.get("/customer-stats", async (_req, res) => {
+  const rows = await db
+    .select({
+      customerName: ordersTable.customerName,
+      customerPhone: ordersTable.customerPhone,
+      orderCount: sql<number>`count(*)::int`,
+      totalSpent: sql<number>`coalesce(sum(total_amount), 0)::float`,
+    })
+    .from(ordersTable)
+    .groupBy(ordersTable.customerPhone, ordersTable.customerName)
+    .orderBy(sql`count(*) desc`)
+    .limit(5);
+
+  const [countRow] = await db
+    .select({ uniqueCustomers: sql<number>`count(distinct customer_phone)::int` })
+    .from(ordersTable);
+
+  res.json({
+    uniqueCustomers: countRow?.uniqueCustomers ?? 0,
+    topCustomers: rows,
+  });
+});
+
 export default router;

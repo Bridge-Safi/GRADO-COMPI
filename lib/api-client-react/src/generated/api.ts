@@ -23,6 +23,7 @@ import type {
   CreateOrderBody,
   CreateResetRequestBody,
   CreateReviewBody,
+  CustomerStats,
   DashboardSummary,
   Driver,
   DriverStats,
@@ -1943,6 +1944,81 @@ export function useGetDriverStats<
   request?: SecondParameter<typeof customFetch>;
 }): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
   const queryOptions = getGetDriverStatsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Unique customer count and top 5 buyers
+ */
+export const getGetCustomerStatsUrl = () => {
+  return `/api/dashboard/customer-stats`;
+};
+
+export const getCustomerStats = async (
+  options?: RequestInit,
+): Promise<CustomerStats> => {
+  return customFetch<CustomerStats>(getGetCustomerStatsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetCustomerStatsQueryKey = () => {
+  return [`/api/dashboard/customer-stats`] as const;
+};
+
+export const getGetCustomerStatsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getCustomerStats>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getCustomerStats>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetCustomerStatsQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getCustomerStats>>
+  > = ({ signal }) => getCustomerStats({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getCustomerStats>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetCustomerStatsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getCustomerStats>>
+>;
+export type GetCustomerStatsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Unique customer count and top 5 buyers
+ */
+
+export function useGetCustomerStats<
+  TData = Awaited<ReturnType<typeof getCustomerStats>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getCustomerStats>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetCustomerStatsQueryOptions(options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;

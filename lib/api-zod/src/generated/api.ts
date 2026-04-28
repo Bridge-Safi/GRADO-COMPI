@@ -539,6 +539,21 @@ export const GetDriverStatsResponseItem = zod.object({
 export const GetDriverStatsResponse = zod.array(GetDriverStatsResponseItem);
 
 /**
+ * @summary Unique customer count and top 5 buyers
+ */
+export const GetCustomerStatsResponse = zod.object({
+  uniqueCustomers: zod.number(),
+  topCustomers: zod.array(
+    zod.object({
+      customerName: zod.string(),
+      customerPhone: zod.string(),
+      orderCount: zod.number(),
+      totalSpent: zod.number(),
+    }),
+  ),
+});
+
+/**
  * @summary List all reset requests (pending first)
  */
 export const ListResetRequestsQueryParams = zod.object({

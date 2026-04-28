@@ -475,6 +475,19 @@ paths:
                 items:
                   $ref: "#/components/schemas/DriverStats"
 
+  /dashboard/customer-stats:
+    get:
+      operationId: getCustomerStats
+      tags: [dashboard]
+      summary: Unique customer count and top 5 buyers
+      responses:
+        "200":
+          description: Customer statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomerStats"
+
   /reset-requests:
     get:
       operationId: listResetRequests
@@ -930,6 +943,36 @@ components:
         - revenue
         - rating
         - status
+
+    TopCustomer:
+      type: object
+      properties:
+        customerName:
+          type: string
+        customerPhone:
+          type: string
+        orderCount:
+          type: integer
+        totalSpent:
+          type: number
+      required:
+        - customerName
+        - customerPhone
+        - orderCount
+        - totalSpent
+
+    CustomerStats:
+      type: object
+      properties:
+        uniqueCustomers:
+          type: integer
+        topCustomers:
+          type: array
+          items:
+            $ref: "#/components/schemas/TopCustomer"
+      required:
+        - uniqueCustomers
+        - topCustomers
 
     ResetRequest:
       type: object

@@ -215,6 +215,18 @@ export interface DriverStats {
   status: string;
 }
 
+export interface TopCustomer {
+  customerName: string;
+  customerPhone: string;
+  orderCount: number;
+  totalSpent: number;
+}
+
+export interface CustomerStats {
+  uniqueCustomers: number;
+  topCustomers: TopCustomer[];
+}
+
 export type ResetRequestType =
   (typeof ResetRequestType)[keyof typeof ResetRequestType];
 
