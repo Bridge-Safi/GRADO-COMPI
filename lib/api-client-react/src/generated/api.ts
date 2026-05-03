@@ -21,6 +21,7 @@ import type {
   Alert,
   CreateDriverBody,
   CreateOrderBody,
+  CreatePlayerBody,
   CreateResetRequestBody,
   CreateRestaurantBody,
   CreateReviewBody,
@@ -36,7 +37,11 @@ import type {
   ListOrdersParams,
   ListResetRequestsParams,
   Order,
+  PaymentSummary,
   PendingCount,
+  Player,
+  PlayerRanked,
+  PlayersStats,
   RecordDriverRefusalBody,
   ResetRequest,
   Restaurant,
@@ -47,6 +52,7 @@ import type {
   UpdateDriverBody,
   UpdateDriverLocationBody,
   UpdateOrderBody,
+  UpdatePlayerBody,
   UpdateRestaurantBody,
   WarnDriverBody,
 } from "./api.schemas";
@@ -2457,6 +2463,720 @@ export const useMarkResetRequestComplete = <
   TContext
 > => {
   return useMutation(getMarkResetRequestCompleteMutationOptions(options));
+};
+
+/**
+ * @summary List all players ordered by score
+ */
+export const getListPlayersUrl = () => {
+  return `/api/players`;
+};
+
+export const listPlayers = async (options?: RequestInit): Promise<Player[]> => {
+  return customFetch<Player[]>(getListPlayersUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListPlayersQueryKey = () => {
+  return [`/api/players`] as const;
+};
+
+export const getListPlayersQueryOptions = <
+  TData = Awaited<ReturnType<typeof listPlayers>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listPlayers>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListPlayersQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listPlayers>>> = ({
+    signal,
+  }) => listPlayers({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listPlayers>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListPlayersQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listPlayers>>
+>;
+export type ListPlayersQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List all players ordered by score
+ */
+
+export function useListPlayers<
+  TData = Awaited<ReturnType<typeof listPlayers>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listPlayers>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListPlayersQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Create or upsert a player
+ */
+export const getCreatePlayerUrl = () => {
+  return `/api/players`;
+};
+
+export const createPlayer = async (
+  createPlayerBody: CreatePlayerBody,
+  options?: RequestInit,
+): Promise<Player> => {
+  return customFetch<Player>(getCreatePlayerUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createPlayerBody),
+  });
+};
+
+export const getCreatePlayerMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createPlayer>>,
+    TError,
+    { data: BodyType<CreatePlayerBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createPlayer>>,
+  TError,
+  { data: BodyType<CreatePlayerBody> },
+  TContext
+> => {
+  const mutationKey = ["createPlayer"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createPlayer>>,
+    { data: BodyType<CreatePlayerBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createPlayer(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreatePlayerMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createPlayer>>
+>;
+export type CreatePlayerMutationBody = BodyType<CreatePlayerBody>;
+export type CreatePlayerMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Create or upsert a player
+ */
+export const useCreatePlayer = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createPlayer>>,
+    TError,
+    { data: BodyType<CreatePlayerBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createPlayer>>,
+  TError,
+  { data: BodyType<CreatePlayerBody> },
+  TContext
+> => {
+  return useMutation(getCreatePlayerMutationOptions(options));
+};
+
+/**
+ * @summary Top 50 players by score
+ */
+export const getGetLeaderboardUrl = () => {
+  return `/api/players/leaderboard`;
+};
+
+export const getLeaderboard = async (
+  options?: RequestInit,
+): Promise<PlayerRanked[]> => {
+  return customFetch<PlayerRanked[]>(getGetLeaderboardUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetLeaderboardQueryKey = () => {
+  return [`/api/players/leaderboard`] as const;
+};
+
+export const getGetLeaderboardQueryOptions = <
+  TData = Awaited<ReturnType<typeof getLeaderboard>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getLeaderboard>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetLeaderboardQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getLeaderboard>>> = ({
+    signal,
+  }) => getLeaderboard({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getLeaderboard>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetLeaderboardQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getLeaderboard>>
+>;
+export type GetLeaderboardQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Top 50 players by score
+ */
+
+export function useGetLeaderboard<
+  TData = Awaited<ReturnType<typeof getLeaderboard>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getLeaderboard>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetLeaderboardQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Currently online players
+ */
+export const getGetOnlinePlayersUrl = () => {
+  return `/api/players/online`;
+};
+
+export const getOnlinePlayers = async (
+  options?: RequestInit,
+): Promise<Player[]> => {
+  return customFetch<Player[]>(getGetOnlinePlayersUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetOnlinePlayersQueryKey = () => {
+  return [`/api/players/online`] as const;
+};
+
+export const getGetOnlinePlayersQueryOptions = <
+  TData = Awaited<ReturnType<typeof getOnlinePlayers>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getOnlinePlayers>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetOnlinePlayersQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getOnlinePlayers>>
+  > = ({ signal }) => getOnlinePlayers({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getOnlinePlayers>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetOnlinePlayersQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getOnlinePlayers>>
+>;
+export type GetOnlinePlayersQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Currently online players
+ */
+
+export function useGetOnlinePlayers<
+  TData = Awaited<ReturnType<typeof getOnlinePlayers>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getOnlinePlayers>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetOnlinePlayersQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Global stats (total, online, ready for menu)
+ */
+export const getGetPlayersStatsUrl = () => {
+  return `/api/players/stats`;
+};
+
+export const getPlayersStats = async (
+  options?: RequestInit,
+): Promise<PlayersStats> => {
+  return customFetch<PlayersStats>(getGetPlayersStatsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetPlayersStatsQueryKey = () => {
+  return [`/api/players/stats`] as const;
+};
+
+export const getGetPlayersStatsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getPlayersStats>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getPlayersStats>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetPlayersStatsQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getPlayersStats>>> = ({
+    signal,
+  }) => getPlayersStats({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getPlayersStats>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetPlayersStatsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getPlayersStats>>
+>;
+export type GetPlayersStatsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Global stats (total, online, ready for menu)
+ */
+
+export function useGetPlayersStats<
+  TData = Awaited<ReturnType<typeof getPlayersStats>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getPlayersStats>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetPlayersStatsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Players grouped by how many diamonds they are missing
+ */
+export const getGetPaymentSummaryUrl = () => {
+  return `/api/players/payment-summary`;
+};
+
+export const getPaymentSummary = async (
+  options?: RequestInit,
+): Promise<PaymentSummary> => {
+  return customFetch<PaymentSummary>(getGetPaymentSummaryUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetPaymentSummaryQueryKey = () => {
+  return [`/api/players/payment-summary`] as const;
+};
+
+export const getGetPaymentSummaryQueryOptions = <
+  TData = Awaited<ReturnType<typeof getPaymentSummary>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getPaymentSummary>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetPaymentSummaryQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getPaymentSummary>>
+  > = ({ signal }) => getPaymentSummary({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getPaymentSummary>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetPaymentSummaryQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getPaymentSummary>>
+>;
+export type GetPaymentSummaryQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Players grouped by how many diamonds they are missing
+ */
+
+export function useGetPaymentSummary<
+  TData = Awaited<ReturnType<typeof getPaymentSummary>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getPaymentSummary>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetPaymentSummaryQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Update a player
+ */
+export const getUpdatePlayerUrl = (id: number) => {
+  return `/api/players/${id}`;
+};
+
+export const updatePlayer = async (
+  id: number,
+  updatePlayerBody: UpdatePlayerBody,
+  options?: RequestInit,
+): Promise<Player> => {
+  return customFetch<Player>(getUpdatePlayerUrl(id), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(updatePlayerBody),
+  });
+};
+
+export const getUpdatePlayerMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updatePlayer>>,
+    TError,
+    { id: number; data: BodyType<UpdatePlayerBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updatePlayer>>,
+  TError,
+  { id: number; data: BodyType<UpdatePlayerBody> },
+  TContext
+> => {
+  const mutationKey = ["updatePlayer"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updatePlayer>>,
+    { id: number; data: BodyType<UpdatePlayerBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updatePlayer(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdatePlayerMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updatePlayer>>
+>;
+export type UpdatePlayerMutationBody = BodyType<UpdatePlayerBody>;
+export type UpdatePlayerMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Update a player
+ */
+export const useUpdatePlayer = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updatePlayer>>,
+    TError,
+    { id: number; data: BodyType<UpdatePlayerBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updatePlayer>>,
+  TError,
+  { id: number; data: BodyType<UpdatePlayerBody> },
+  TContext
+> => {
+  return useMutation(getUpdatePlayerMutationOptions(options));
+};
+
+/**
+ * @summary Delete a player
+ */
+export const getDeletePlayerUrl = (id: number) => {
+  return `/api/players/${id}`;
+};
+
+export const deletePlayer = async (
+  id: number,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeletePlayerUrl(id), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeletePlayerMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deletePlayer>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deletePlayer>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationKey = ["deletePlayer"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deletePlayer>>,
+    { id: number }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deletePlayer(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeletePlayerMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deletePlayer>>
+>;
+
+export type DeletePlayerMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Delete a player
+ */
+export const useDeletePlayer = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deletePlayer>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deletePlayer>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  return useMutation(getDeletePlayerMutationOptions(options));
+};
+
+/**
+ * @summary Mark player as online
+ */
+export const getPingPlayerUrl = (id: number) => {
+  return `/api/players/${id}/ping`;
+};
+
+export const pingPlayer = async (
+  id: number,
+  options?: RequestInit,
+): Promise<Player> => {
+  return customFetch<Player>(getPingPlayerUrl(id), {
+    ...options,
+    method: "PATCH",
+  });
+};
+
+export const getPingPlayerMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof pingPlayer>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof pingPlayer>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationKey = ["pingPlayer"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof pingPlayer>>,
+    { id: number }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return pingPlayer(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PingPlayerMutationResult = NonNullable<
+  Awaited<ReturnType<typeof pingPlayer>>
+>;
+
+export type PingPlayerMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Mark player as online
+ */
+export const usePingPlayer = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof pingPlayer>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof pingPlayer>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  return useMutation(getPingPlayerMutationOptions(options));
 };
 
 /**

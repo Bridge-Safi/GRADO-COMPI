@@ -17,6 +17,7 @@ tags:
   - name: reset-requests
   - name: reviews
   - name: restaurants
+  - name: players
 paths:
   /healthz:
     get:
@@ -577,6 +578,151 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ResetRequest"
+
+  /players:
+    get:
+      operationId: listPlayers
+      tags: [players]
+      summary: List all players ordered by score
+      responses:
+        "200":
+          description: List of players
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Player"
+    post:
+      operationId: createPlayer
+      tags: [players]
+      summary: Create or upsert a player
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePlayerBody"
+      responses:
+        "201":
+          description: Created player
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Player"
+
+  /players/leaderboard:
+    get:
+      operationId: getLeaderboard
+      tags: [players]
+      summary: Top 50 players by score
+      responses:
+        "200":
+          description: Ranked players
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PlayerRanked"
+
+  /players/online:
+    get:
+      operationId: getOnlinePlayers
+      tags: [players]
+      summary: Currently online players
+      responses:
+        "200":
+          description: Online players
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Player"
+
+  /players/stats:
+    get:
+      operationId: getPlayersStats
+      tags: [players]
+      summary: Global stats (total, online, ready for menu)
+      responses:
+        "200":
+          description: Stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlayersStats"
+
+  /players/payment-summary:
+    get:
+      operationId: getPaymentSummary
+      tags: [players]
+      summary: Players grouped by how many diamonds they are missing
+      responses:
+        "200":
+          description: Payment summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentSummary"
+
+  /players/{id}:
+    patch:
+      operationId: updatePlayer
+      tags: [players]
+      summary: Update a player
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePlayerBody"
+      responses:
+        "200":
+          description: Updated player
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Player"
+    delete:
+      operationId: deletePlayer
+      tags: [players]
+      summary: Delete a player
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+
+  /players/{id}/ping:
+    patch:
+      operationId: pingPlayer
+      tags: [players]
+      summary: Mark player as online
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Updated player
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Player"
 
   /restaurants:
     get:
@@ -1143,6 +1289,199 @@ components:
         - rating
         - sentiment
         - createdAt
+
+    Player:
+      type: object
+      properties:
+        id:
+          type: integer
+        pseudo:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+          nullable: true
+        diamonds:
+          type: integer
+        score:
+          type: integer
+        gamesPlayed:
+          type: integer
+        isOnline:
+          type: boolean
+        missing:
+          type: integer
+        amountMAD:
+          type: integer
+        lastSeenAt:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - pseudo
+        - phone
+        - diamonds
+        - score
+        - gamesPlayed
+        - isOnline
+        - missing
+        - amountMAD
+        - createdAt
+        - updatedAt
+
+    PlayerRanked:
+      type: object
+      properties:
+        id:
+          type: integer
+        pseudo:
+          type: string
+        phone:
+          type: string
+        diamonds:
+          type: integer
+        score:
+          type: integer
+        gamesPlayed:
+          type: integer
+        isOnline:
+          type: boolean
+        missing:
+          type: integer
+        amountMAD:
+          type: integer
+        rank:
+          type: integer
+        lastSeenAt:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - pseudo
+        - phone
+        - diamonds
+        - score
+        - gamesPlayed
+        - isOnline
+        - missing
+        - amountMAD
+        - rank
+        - createdAt
+        - updatedAt
+
+    PlayersStats:
+      type: object
+      properties:
+        total:
+          type: integer
+        online:
+          type: integer
+        ready:
+          type: integer
+        notReady:
+          type: integer
+        totalDiamonds:
+          type: integer
+        menuCost:
+          type: integer
+      required:
+        - total
+        - online
+        - ready
+        - notReady
+        - totalDiamonds
+        - menuCost
+
+    PaymentSummary:
+      type: object
+      properties:
+        menuCost:
+          type: integer
+        diamondsToMAD:
+          type: integer
+        totalPlayers:
+          type: integer
+        ready:
+          type: array
+          items:
+            $ref: "#/components/schemas/Player"
+        owes10k:
+          type: array
+          items:
+            $ref: "#/components/schemas/Player"
+        owes20k:
+          type: array
+          items:
+            $ref: "#/components/schemas/Player"
+        owes30k:
+          type: array
+          items:
+            $ref: "#/components/schemas/Player"
+        owes40k:
+          type: array
+          items:
+            $ref: "#/components/schemas/Player"
+        owes50k:
+          type: array
+          items:
+            $ref: "#/components/schemas/Player"
+        owesMore:
+          type: array
+          items:
+            $ref: "#/components/schemas/Player"
+      required:
+        - menuCost
+        - diamondsToMAD
+        - totalPlayers
+        - ready
+        - owes10k
+        - owes20k
+        - owes30k
+        - owes40k
+        - owes50k
+        - owesMore
+
+    CreatePlayerBody:
+      type: object
+      properties:
+        pseudo:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        diamonds:
+          type: integer
+        score:
+          type: integer
+        gamesPlayed:
+          type: integer
+      required:
+        - pseudo
+        - phone
+
+    UpdatePlayerBody:
+      type: object
+      properties:
+        pseudo:
+          type: string
+        diamonds:
+          type: integer
+        score:
+          type: integer
+        gamesPlayed:
+          type: integer
+        isOnline:
+          type: boolean
 
     Restaurant:
       type: object

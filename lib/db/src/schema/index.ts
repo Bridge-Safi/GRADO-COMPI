@@ -4,3 +4,4 @@ export * from "./activities";
 export * from "./reset-requests";
 export * from "./reviews";
 export * from "./restaurants";
+export * from "./players";

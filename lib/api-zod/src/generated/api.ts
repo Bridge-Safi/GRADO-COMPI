@@ -632,6 +632,279 @@ export const MarkResetRequestCompleteResponse = zod.object({
 });
 
 /**
+ * @summary List all players ordered by score
+ */
+export const ListPlayersResponseItem = zod.object({
+  id: zod.number(),
+  pseudo: zod.string(),
+  phone: zod.string(),
+  email: zod.string().nullish(),
+  diamonds: zod.number(),
+  score: zod.number(),
+  gamesPlayed: zod.number(),
+  isOnline: zod.boolean(),
+  missing: zod.number(),
+  amountMAD: zod.number(),
+  lastSeenAt: zod.string().nullish(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+export const ListPlayersResponse = zod.array(ListPlayersResponseItem);
+
+/**
+ * @summary Create or upsert a player
+ */
+export const CreatePlayerBody = zod.object({
+  pseudo: zod.string(),
+  phone: zod.string(),
+  email: zod.string().optional(),
+  diamonds: zod.number().optional(),
+  score: zod.number().optional(),
+  gamesPlayed: zod.number().optional(),
+});
+
+/**
+ * @summary Top 50 players by score
+ */
+export const GetLeaderboardResponseItem = zod.object({
+  id: zod.number(),
+  pseudo: zod.string(),
+  phone: zod.string(),
+  diamonds: zod.number(),
+  score: zod.number(),
+  gamesPlayed: zod.number(),
+  isOnline: zod.boolean(),
+  missing: zod.number(),
+  amountMAD: zod.number(),
+  rank: zod.number(),
+  lastSeenAt: zod.string().nullish(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+export const GetLeaderboardResponse = zod.array(GetLeaderboardResponseItem);
+
+/**
+ * @summary Currently online players
+ */
+export const GetOnlinePlayersResponseItem = zod.object({
+  id: zod.number(),
+  pseudo: zod.string(),
+  phone: zod.string(),
+  email: zod.string().nullish(),
+  diamonds: zod.number(),
+  score: zod.number(),
+  gamesPlayed: zod.number(),
+  isOnline: zod.boolean(),
+  missing: zod.number(),
+  amountMAD: zod.number(),
+  lastSeenAt: zod.string().nullish(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+export const GetOnlinePlayersResponse = zod.array(GetOnlinePlayersResponseItem);
+
+/**
+ * @summary Global stats (total, online, ready for menu)
+ */
+export const GetPlayersStatsResponse = zod.object({
+  total: zod.number(),
+  online: zod.number(),
+  ready: zod.number(),
+  notReady: zod.number(),
+  totalDiamonds: zod.number(),
+  menuCost: zod.number(),
+});
+
+/**
+ * @summary Players grouped by how many diamonds they are missing
+ */
+export const GetPaymentSummaryResponse = zod.object({
+  menuCost: zod.number(),
+  diamondsToMAD: zod.number(),
+  totalPlayers: zod.number(),
+  ready: zod.array(
+    zod.object({
+      id: zod.number(),
+      pseudo: zod.string(),
+      phone: zod.string(),
+      email: zod.string().nullish(),
+      diamonds: zod.number(),
+      score: zod.number(),
+      gamesPlayed: zod.number(),
+      isOnline: zod.boolean(),
+      missing: zod.number(),
+      amountMAD: zod.number(),
+      lastSeenAt: zod.string().nullish(),
+      createdAt: zod.string(),
+      updatedAt: zod.string(),
+    }),
+  ),
+  owes10k: zod.array(
+    zod.object({
+      id: zod.number(),
+      pseudo: zod.string(),
+      phone: zod.string(),
+      email: zod.string().nullish(),
+      diamonds: zod.number(),
+      score: zod.number(),
+      gamesPlayed: zod.number(),
+      isOnline: zod.boolean(),
+      missing: zod.number(),
+      amountMAD: zod.number(),
+      lastSeenAt: zod.string().nullish(),
+      createdAt: zod.string(),
+      updatedAt: zod.string(),
+    }),
+  ),
+  owes20k: zod.array(
+    zod.object({
+      id: zod.number(),
+      pseudo: zod.string(),
+      phone: zod.string(),
+      email: zod.string().nullish(),
+      diamonds: zod.number(),
+      score: zod.number(),
+      gamesPlayed: zod.number(),
+      isOnline: zod.boolean(),
+      missing: zod.number(),
+      amountMAD: zod.number(),
+      lastSeenAt: zod.string().nullish(),
+      createdAt: zod.string(),
+      updatedAt: zod.string(),
+    }),
+  ),
+  owes30k: zod.array(
+    zod.object({
+      id: zod.number(),
+      pseudo: zod.string(),
+      phone: zod.string(),
+      email: zod.string().nullish(),
+      diamonds: zod.number(),
+      score: zod.number(),
+      gamesPlayed: zod.number(),
+      isOnline: zod.boolean(),
+      missing: zod.number(),
+      amountMAD: zod.number(),
+      lastSeenAt: zod.string().nullish(),
+      createdAt: zod.string(),
+      updatedAt: zod.string(),
+    }),
+  ),
+  owes40k: zod.array(
+    zod.object({
+      id: zod.number(),
+      pseudo: zod.string(),
+      phone: zod.string(),
+      email: zod.string().nullish(),
+      diamonds: zod.number(),
+      score: zod.number(),
+      gamesPlayed: zod.number(),
+      isOnline: zod.boolean(),
+      missing: zod.number(),
+      amountMAD: zod.number(),
+      lastSeenAt: zod.string().nullish(),
+      createdAt: zod.string(),
+      updatedAt: zod.string(),
+    }),
+  ),
+  owes50k: zod.array(
+    zod.object({
+      id: zod.number(),
+      pseudo: zod.string(),
+      phone: zod.string(),
+      email: zod.string().nullish(),
+      diamonds: zod.number(),
+      score: zod.number(),
+      gamesPlayed: zod.number(),
+      isOnline: zod.boolean(),
+      missing: zod.number(),
+      amountMAD: zod.number(),
+      lastSeenAt: zod.string().nullish(),
+      createdAt: zod.string(),
+      updatedAt: zod.string(),
+    }),
+  ),
+  owesMore: zod.array(
+    zod.object({
+      id: zod.number(),
+      pseudo: zod.string(),
+      phone: zod.string(),
+      email: zod.string().nullish(),
+      diamonds: zod.number(),
+      score: zod.number(),
+      gamesPlayed: zod.number(),
+      isOnline: zod.boolean(),
+      missing: zod.number(),
+      amountMAD: zod.number(),
+      lastSeenAt: zod.string().nullish(),
+      createdAt: zod.string(),
+      updatedAt: zod.string(),
+    }),
+  ),
+});
+
+/**
+ * @summary Update a player
+ */
+export const UpdatePlayerParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdatePlayerBody = zod.object({
+  pseudo: zod.string().optional(),
+  diamonds: zod.number().optional(),
+  score: zod.number().optional(),
+  gamesPlayed: zod.number().optional(),
+  isOnline: zod.boolean().optional(),
+});
+
+export const UpdatePlayerResponse = zod.object({
+  id: zod.number(),
+  pseudo: zod.string(),
+  phone: zod.string(),
+  email: zod.string().nullish(),
+  diamonds: zod.number(),
+  score: zod.number(),
+  gamesPlayed: zod.number(),
+  isOnline: zod.boolean(),
+  missing: zod.number(),
+  amountMAD: zod.number(),
+  lastSeenAt: zod.string().nullish(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+
+/**
+ * @summary Delete a player
+ */
+export const DeletePlayerParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary Mark player as online
+ */
+export const PingPlayerParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const PingPlayerResponse = zod.object({
+  id: zod.number(),
+  pseudo: zod.string(),
+  phone: zod.string(),
+  email: zod.string().nullish(),
+  diamonds: zod.number(),
+  score: zod.number(),
+  gamesPlayed: zod.number(),
+  isOnline: zod.boolean(),
+  missing: zod.number(),
+  amountMAD: zod.number(),
+  lastSeenAt: zod.string().nullish(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+
+/**
  * @summary List all active restaurants
  */
 export const ListRestaurantsResponseItem = zod.object({

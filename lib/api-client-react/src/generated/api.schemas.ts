@@ -293,6 +293,77 @@ export interface Review {
   createdAt: string;
 }
 
+export interface Player {
+  id: number;
+  pseudo: string;
+  phone: string;
+  email?: string | null;
+  diamonds: number;
+  score: number;
+  gamesPlayed: number;
+  isOnline: boolean;
+  missing: number;
+  amountMAD: number;
+  lastSeenAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PlayerRanked {
+  id: number;
+  pseudo: string;
+  phone: string;
+  diamonds: number;
+  score: number;
+  gamesPlayed: number;
+  isOnline: boolean;
+  missing: number;
+  amountMAD: number;
+  rank: number;
+  lastSeenAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PlayersStats {
+  total: number;
+  online: number;
+  ready: number;
+  notReady: number;
+  totalDiamonds: number;
+  menuCost: number;
+}
+
+export interface PaymentSummary {
+  menuCost: number;
+  diamondsToMAD: number;
+  totalPlayers: number;
+  ready: Player[];
+  owes10k: Player[];
+  owes20k: Player[];
+  owes30k: Player[];
+  owes40k: Player[];
+  owes50k: Player[];
+  owesMore: Player[];
+}
+
+export interface CreatePlayerBody {
+  pseudo: string;
+  phone: string;
+  email?: string;
+  diamonds?: number;
+  score?: number;
+  gamesPlayed?: number;
+}
+
+export interface UpdatePlayerBody {
+  pseudo?: string;
+  diamonds?: number;
+  score?: number;
+  gamesPlayed?: number;
+  isOnline?: boolean;
+}
+
 export type RestaurantStatus =
   (typeof RestaurantStatus)[keyof typeof RestaurantStatus];
 
