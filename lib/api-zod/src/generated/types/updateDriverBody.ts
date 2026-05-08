@@ -12,6 +12,7 @@ export interface UpdateDriverBody {
   phone?: string;
   email?: string;
   vehicleType?: string;
+  services?: string;
   status?: UpdateDriverBodyStatus;
   rating?: number;
   avatarUrl?: string;

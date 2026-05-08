@@ -19,6 +19,17 @@ export const OrderStatus = {
   cancelled: "cancelled",
 } as const;
 
+export type OrderServiceType =
+  (typeof OrderServiceType)[keyof typeof OrderServiceType];
+
+export const OrderServiceType = {
+  nourriture: "nourriture",
+  taxi: "taxi",
+  confort: "confort",
+  tabac: "tabac",
+  fleur: "fleur",
+} as const;
+
 export interface Order {
   id: number;
   orderNumber: string;
@@ -28,6 +39,7 @@ export interface Order {
   items: string;
   totalAmount: number;
   status: OrderStatus;
+  serviceType: OrderServiceType;
   driverId?: number | null;
   driverName?: string | null;
   sourceUrl?: string | null;
@@ -36,6 +48,17 @@ export interface Order {
   updatedAt: string;
 }
 
+export type CreateOrderBodyServiceType =
+  (typeof CreateOrderBodyServiceType)[keyof typeof CreateOrderBodyServiceType];
+
+export const CreateOrderBodyServiceType = {
+  nourriture: "nourriture",
+  taxi: "taxi",
+  confort: "confort",
+  tabac: "tabac",
+  fleur: "fleur",
+} as const;
+
 export interface CreateOrderBody {
   orderNumber: string;
   customerName: string;
@@ -43,6 +66,7 @@ export interface CreateOrderBody {
   deliveryAddress: string;
   items: string;
   totalAmount: number;
+  serviceType?: CreateOrderBodyServiceType;
   notes?: string;
   sourceUrl?: string;
 }
@@ -58,8 +82,20 @@ export const UpdateOrderBodyStatus = {
   cancelled: "cancelled",
 } as const;
 
+export type UpdateOrderBodyServiceType =
+  (typeof UpdateOrderBodyServiceType)[keyof typeof UpdateOrderBodyServiceType];
+
+export const UpdateOrderBodyServiceType = {
+  nourriture: "nourriture",
+  taxi: "taxi",
+  confort: "confort",
+  tabac: "tabac",
+  fleur: "fleur",
+} as const;
+
 export interface UpdateOrderBody {
   status?: UpdateOrderBodyStatus;
+  serviceType?: UpdateOrderBodyServiceType;
   driverId?: number | null;
   notes?: string;
 }
@@ -78,6 +114,7 @@ export interface Driver {
   phone: string;
   email?: string | null;
   vehicleType: string;
+  services: string;
   status: DriverStatus;
   rating: number;
   totalDeliveries: number;
@@ -97,6 +134,7 @@ export interface CreateDriverBody {
   phone: string;
   email?: string;
   vehicleType: string;
+  services?: string;
   avatarUrl?: string;
 }
 
@@ -114,6 +152,7 @@ export interface UpdateDriverBody {
   phone?: string;
   email?: string;
   vehicleType?: string;
+  services?: string;
   status?: UpdateDriverBodyStatus;
   rating?: number;
   avatarUrl?: string;
@@ -469,6 +508,54 @@ export interface CreateReviewBody {
   comment?: string | null;
   orderId?: number | null;
   sentiment: CreateReviewBodySentiment;
+}
+
+export interface Client {
+  id: number;
+  name: string;
+  phone: string;
+  email?: string | null;
+  address?: string | null;
+  notes?: string | null;
+  isVip: boolean;
+  totalOrders: number;
+  totalSpent: number;
+  lastOrderAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ClientFromOrders {
+  phone: string;
+  name: string;
+  address: string;
+  totalOrders: number;
+  totalSpent: number;
+  lastOrderAt?: string | null;
+}
+
+export interface ClientsStats {
+  total: number;
+  vip: number;
+  uniqueCustomers: number;
+  totalRevenue: number;
+}
+
+export interface CreateClientBody {
+  name: string;
+  phone: string;
+  email?: string;
+  address?: string;
+  notes?: string;
+  isVip?: boolean;
+}
+
+export interface UpdateClientBody {
+  name?: string;
+  email?: string;
+  address?: string;
+  notes?: string;
+  isVip?: boolean;
 }
 
 export type ListOrdersParams = {

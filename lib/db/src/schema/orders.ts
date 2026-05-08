@@ -13,6 +13,7 @@ export const ordersTable = pgTable("orders", {
   items: text("items").notNull(),
   totalAmount: real("total_amount").notNull(),
   status: text("status").notNull().default("pending"),
+  serviceType: text("service_type").notNull().default("nourriture"),
   driverId: integer("driver_id").references(() => driversTable.id),
   restaurantId: integer("restaurant_id").references(() => restaurantsTable.id),
   sourceUrl: text("source_url"),

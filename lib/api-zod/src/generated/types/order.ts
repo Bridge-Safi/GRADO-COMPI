@@ -5,6 +5,7 @@
  * GradoEats Manager API
  * OpenAPI spec version: 0.1.0
  */
+import type { OrderServiceType } from "./orderServiceType";
 import type { OrderStatus } from "./orderStatus";
 
 export interface Order {
@@ -16,6 +17,7 @@ export interface Order {
   items: string;
   totalAmount: number;
   status: OrderStatus;
+  serviceType: OrderServiceType;
   driverId?: number | null;
   driverName?: string | null;
   sourceUrl?: string | null;

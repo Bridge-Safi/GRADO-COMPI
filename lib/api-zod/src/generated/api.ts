@@ -39,6 +39,7 @@ export const ListOrdersResponseItem = zod.object({
     "delivered",
     "cancelled",
   ]),
+  serviceType: zod.enum(["nourriture", "taxi", "confort", "tabac", "fleur"]),
   driverId: zod.number().nullish(),
   driverName: zod.string().nullish(),
   sourceUrl: zod.string().nullish(),
@@ -58,6 +59,9 @@ export const CreateOrderBody = zod.object({
   deliveryAddress: zod.string(),
   items: zod.string(),
   totalAmount: zod.number(),
+  serviceType: zod
+    .enum(["nourriture", "taxi", "confort", "tabac", "fleur"])
+    .optional(),
   notes: zod.string().optional(),
   sourceUrl: zod.string().optional(),
 });
@@ -84,6 +88,7 @@ export const GetOrderResponse = zod.object({
     "delivered",
     "cancelled",
   ]),
+  serviceType: zod.enum(["nourriture", "taxi", "confort", "tabac", "fleur"]),
   driverId: zod.number().nullish(),
   driverName: zod.string().nullish(),
   sourceUrl: zod.string().nullish(),
@@ -102,6 +107,9 @@ export const UpdateOrderParams = zod.object({
 export const UpdateOrderBody = zod.object({
   status: zod
     .enum(["pending", "assigned", "in_delivery", "delivered", "cancelled"])
+    .optional(),
+  serviceType: zod
+    .enum(["nourriture", "taxi", "confort", "tabac", "fleur"])
     .optional(),
   driverId: zod.number().nullish(),
   notes: zod.string().optional(),
@@ -122,6 +130,7 @@ export const UpdateOrderResponse = zod.object({
     "delivered",
     "cancelled",
   ]),
+  serviceType: zod.enum(["nourriture", "taxi", "confort", "tabac", "fleur"]),
   driverId: zod.number().nullish(),
   driverName: zod.string().nullish(),
   sourceUrl: zod.string().nullish(),
@@ -139,6 +148,7 @@ export const ListDriversResponseItem = zod.object({
   phone: zod.string(),
   email: zod.string().nullish(),
   vehicleType: zod.string(),
+  services: zod.string(),
   status: zod.enum(["available", "busy", "offline"]),
   rating: zod.number(),
   totalDeliveries: zod.number(),
@@ -162,6 +172,7 @@ export const CreateDriverBody = zod.object({
   phone: zod.string(),
   email: zod.string().optional(),
   vehicleType: zod.string(),
+  services: zod.string().optional(),
   avatarUrl: zod.string().optional(),
 });
 
@@ -178,6 +189,7 @@ export const GetDriverResponse = zod.object({
   phone: zod.string(),
   email: zod.string().nullish(),
   vehicleType: zod.string(),
+  services: zod.string(),
   status: zod.enum(["available", "busy", "offline"]),
   rating: zod.number(),
   totalDeliveries: zod.number(),
@@ -204,6 +216,7 @@ export const UpdateDriverBody = zod.object({
   phone: zod.string().optional(),
   email: zod.string().optional(),
   vehicleType: zod.string().optional(),
+  services: zod.string().optional(),
   status: zod.enum(["available", "busy", "offline"]).optional(),
   rating: zod.number().optional(),
   avatarUrl: zod.string().optional(),
@@ -215,6 +228,7 @@ export const UpdateDriverResponse = zod.object({
   phone: zod.string(),
   email: zod.string().nullish(),
   vehicleType: zod.string(),
+  services: zod.string(),
   status: zod.enum(["available", "busy", "offline"]),
   rating: zod.number(),
   totalDeliveries: zod.number(),
@@ -246,6 +260,7 @@ export const RecordDriverRefusalResponse = zod.object({
   phone: zod.string(),
   email: zod.string().nullish(),
   vehicleType: zod.string(),
+  services: zod.string(),
   status: zod.enum(["available", "busy", "offline"]),
   rating: zod.number(),
   totalDeliveries: zod.number(),
@@ -277,6 +292,7 @@ export const WarnDriverResponse = zod.object({
   phone: zod.string(),
   email: zod.string().nullish(),
   vehicleType: zod.string(),
+  services: zod.string(),
   status: zod.enum(["available", "busy", "offline"]),
   rating: zod.number(),
   totalDeliveries: zod.number(),
@@ -308,6 +324,7 @@ export const ToggleBlockDriverResponse = zod.object({
   phone: zod.string(),
   email: zod.string().nullish(),
   vehicleType: zod.string(),
+  services: zod.string(),
   status: zod.enum(["available", "busy", "offline"]),
   rating: zod.number(),
   totalDeliveries: zod.number(),
@@ -380,6 +397,7 @@ export const UpdateDriverLocationResponse = zod.object({
   phone: zod.string(),
   email: zod.string().nullish(),
   vehicleType: zod.string(),
+  services: zod.string(),
   status: zod.enum(["available", "busy", "offline"]),
   rating: zod.number(),
   totalDeliveries: zod.number(),
@@ -1022,5 +1040,98 @@ export const UpdateRestaurantResponse = zod.object({
  * @summary Deactivate a restaurant
  */
 export const DeleteRestaurantParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary List all clients with order stats
+ */
+export const ListClientsResponseItem = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  phone: zod.string(),
+  email: zod.string().nullish(),
+  address: zod.string().nullish(),
+  notes: zod.string().nullish(),
+  isVip: zod.boolean(),
+  totalOrders: zod.number(),
+  totalSpent: zod.number(),
+  lastOrderAt: zod.string().nullish(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+export const ListClientsResponse = zod.array(ListClientsResponseItem);
+
+/**
+ * @summary Create a client
+ */
+export const CreateClientBody = zod.object({
+  name: zod.string(),
+  phone: zod.string(),
+  email: zod.string().optional(),
+  address: zod.string().optional(),
+  notes: zod.string().optional(),
+  isVip: zod.boolean().optional(),
+});
+
+/**
+ * @summary Auto-computed clients from order history
+ */
+export const GetClientsFromOrdersResponseItem = zod.object({
+  phone: zod.string(),
+  name: zod.string(),
+  address: zod.string(),
+  totalOrders: zod.number(),
+  totalSpent: zod.number(),
+  lastOrderAt: zod.string().nullish(),
+});
+export const GetClientsFromOrdersResponse = zod.array(
+  GetClientsFromOrdersResponseItem,
+);
+
+/**
+ * @summary Aggregate client stats
+ */
+export const GetClientsStatsResponse = zod.object({
+  total: zod.number(),
+  vip: zod.number(),
+  uniqueCustomers: zod.number(),
+  totalRevenue: zod.number(),
+});
+
+/**
+ * @summary Update a client
+ */
+export const UpdateClientParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateClientBody = zod.object({
+  name: zod.string().optional(),
+  email: zod.string().optional(),
+  address: zod.string().optional(),
+  notes: zod.string().optional(),
+  isVip: zod.boolean().optional(),
+});
+
+export const UpdateClientResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  phone: zod.string(),
+  email: zod.string().nullish(),
+  address: zod.string().nullish(),
+  notes: zod.string().nullish(),
+  isVip: zod.boolean(),
+  totalOrders: zod.number(),
+  totalSpent: zod.number(),
+  lastOrderAt: zod.string().nullish(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+
+/**
+ * @summary Delete a client
+ */
+export const DeleteClientParams = zod.object({
   id: zod.coerce.number(),
 });

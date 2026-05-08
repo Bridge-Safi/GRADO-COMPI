@@ -9,6 +9,7 @@ import resetRequestsRouter from "./reset-requests";
 import reviewsRouter from "./reviews";
 import restaurantsRouter from "./restaurants";
 import playersRouter from "./players";
+import clientsRouter from "./clients";
 
 const router: IRouter = Router();
 
@@ -22,5 +23,6 @@ router.use("/alerts", alertsRouter);
 router.use("/reset-requests", resetRequestsRouter);
 router.use("/restaurants", restaurantsRouter);
 router.use("/players", playersRouter);
+router.use("/clients", clientsRouter);
 
 export default router;

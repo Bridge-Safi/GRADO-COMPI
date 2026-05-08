@@ -5,10 +5,12 @@
  * GradoEats Manager API
  * OpenAPI spec version: 0.1.0
  */
+import type { UpdateOrderBodyServiceType } from "./updateOrderBodyServiceType";
 import type { UpdateOrderBodyStatus } from "./updateOrderBodyStatus";
 
 export interface UpdateOrderBody {
   status?: UpdateOrderBodyStatus;
+  serviceType?: UpdateOrderBodyServiceType;
   driverId?: number | null;
   notes?: string;
 }

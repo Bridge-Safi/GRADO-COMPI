@@ -13,6 +13,7 @@ export interface Driver {
   phone: string;
   email?: string | null;
   vehicleType: string;
+  services: string;
   status: DriverStatus;
   rating: number;
   totalDeliveries: number;

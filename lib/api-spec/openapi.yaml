@@ -18,6 +18,7 @@ tags:
   - name: reviews
   - name: restaurants
   - name: players
+  - name: clients
 paths:
   /healthz:
     get:
@@ -809,6 +810,104 @@ paths:
         "200":
           description: OK
 
+  /clients:
+    get:
+      operationId: listClients
+      tags: [clients]
+      summary: List all clients with order stats
+      responses:
+        "200":
+          description: List of clients
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Client"
+    post:
+      operationId: createClient
+      tags: [clients]
+      summary: Create a client
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateClientBody"
+      responses:
+        "201":
+          description: Created client
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Client"
+
+  /clients/from-orders:
+    get:
+      operationId: getClientsFromOrders
+      tags: [clients]
+      summary: Auto-computed clients from order history
+      responses:
+        "200":
+          description: Clients from orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ClientFromOrders"
+
+  /clients/stats:
+    get:
+      operationId: getClientsStats
+      tags: [clients]
+      summary: Aggregate client stats
+      responses:
+        "200":
+          description: Stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientsStats"
+
+  /clients/{id}:
+    patch:
+      operationId: updateClient
+      tags: [clients]
+      summary: Update a client
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateClientBody"
+      responses:
+        "200":
+          description: Updated client
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Client"
+    delete:
+      operationId: deleteClient
+      tags: [clients]
+      summary: Delete a client
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+
 components:
   schemas:
     HealthStatus:
@@ -839,6 +938,9 @@ components:
         status:
           type: string
           enum: [pending, assigned, in_delivery, delivered, cancelled]
+        serviceType:
+          type: string
+          enum: [nourriture, taxi, confort, tabac, fleur]
         driverId:
           type: integer
           nullable: true
@@ -864,6 +966,7 @@ components:
         - items
         - totalAmount
         - status
+        - serviceType
         - createdAt
         - updatedAt
 
@@ -882,6 +985,9 @@ components:
           type: string
         totalAmount:
           type: number
+        serviceType:
+          type: string
+          enum: [nourriture, taxi, confort, tabac, fleur]
         notes:
           type: string
         sourceUrl:
@@ -900,6 +1006,9 @@ components:
         status:
           type: string
           enum: [pending, assigned, in_delivery, delivered, cancelled]
+        serviceType:
+          type: string
+          enum: [nourriture, taxi, confort, tabac, fleur]
         driverId:
           type: integer
           nullable: true
@@ -919,6 +1028,8 @@ components:
           type: string
           nullable: true
         vehicleType:
+          type: string
+        services:
           type: string
         status:
           type: string
@@ -955,6 +1066,7 @@ components:
         - name
         - phone
         - vehicleType
+        - services
         - status
         - rating
         - totalDeliveries
@@ -974,6 +1086,8 @@ components:
           type: string
         vehicleType:
           type: string
+        services:
+          type: string
         avatarUrl:
           type: string
       required:
@@ -991,6 +1105,8 @@ components:
         email:
           type: string
         vehicleType:
+          type: string
+        services:
           type: string
         status:
           type: string
@@ -1653,3 +1769,117 @@ components:
       required:
         - rating
         - sentiment
+
+    Client:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+          nullable: true
+        address:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        isVip:
+          type: boolean
+        totalOrders:
+          type: integer
+        totalSpent:
+          type: number
+        lastOrderAt:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - name
+        - phone
+        - isVip
+        - totalOrders
+        - totalSpent
+        - createdAt
+        - updatedAt
+
+    ClientFromOrders:
+      type: object
+      properties:
+        phone:
+          type: string
+        name:
+          type: string
+        address:
+          type: string
+        totalOrders:
+          type: integer
+        totalSpent:
+          type: number
+        lastOrderAt:
+          type: string
+          nullable: true
+      required:
+        - phone
+        - name
+        - address
+        - totalOrders
+        - totalSpent
+
+    ClientsStats:
+      type: object
+      properties:
+        total:
+          type: integer
+        vip:
+          type: integer
+        uniqueCustomers:
+          type: integer
+        totalRevenue:
+          type: number
+      required:
+        - total
+        - vip
+        - uniqueCustomers
+        - totalRevenue
+
+    CreateClientBody:
+      type: object
+      properties:
+        name:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        address:
+          type: string
+        notes:
+          type: string
+        isVip:
+          type: boolean
+      required:
+        - name
+        - phone
+
+    UpdateClientBody:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        address:
+          type: string
+        notes:
+          type: string
+        isVip:
+          type: boolean

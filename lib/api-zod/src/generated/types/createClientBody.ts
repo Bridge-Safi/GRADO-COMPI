@@ -6,11 +6,11 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface CreateDriverBody {
+export interface CreateClientBody {
   name: string;
   phone: string;
   email?: string;
-  vehicleType: string;
-  services?: string;
-  avatarUrl?: string;
+  address?: string;
+  notes?: string;
+  isVip?: boolean;
 }

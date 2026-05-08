@@ -5,6 +5,7 @@
  * GradoEats Manager API
  * OpenAPI spec version: 0.1.0
  */
+import type { CreateOrderBodyServiceType } from "./createOrderBodyServiceType";
 
 export interface CreateOrderBody {
   orderNumber: string;
@@ -13,6 +14,7 @@ export interface CreateOrderBody {
   deliveryAddress: string;
   items: string;
   totalAmount: number;
+  serviceType?: CreateOrderBodyServiceType;
   notes?: string;
   sourceUrl?: string;
 }

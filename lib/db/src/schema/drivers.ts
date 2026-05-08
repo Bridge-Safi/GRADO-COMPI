@@ -18,6 +18,7 @@ export const driversTable = pgTable("drivers", {
   lat: real("lat"),
   lng: real("lng"),
   avatarUrl: text("avatar_url"),
+  services: text("services").notNull().default("nourriture"),
   lastActiveAt: timestamp("last_active_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

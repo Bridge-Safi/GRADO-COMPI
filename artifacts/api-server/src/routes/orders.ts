@@ -47,6 +47,7 @@ router.get("/", async (req, res) => {
       items: ordersTable.items,
       totalAmount: ordersTable.totalAmount,
       status: ordersTable.status,
+      serviceType: ordersTable.serviceType,
       driverId: ordersTable.driverId,
       sourceUrl: ordersTable.sourceUrl,
       notes: ordersTable.notes,
@@ -78,6 +79,7 @@ router.post("/", async (req, res) => {
     .values({
       ...parsed.data,
       status: "pending",
+      serviceType: parsed.data.serviceType ?? "nourriture",
     })
     .returning();
 
@@ -106,6 +108,7 @@ router.get("/:id", async (req, res) => {
       items: ordersTable.items,
       totalAmount: ordersTable.totalAmount,
       status: ordersTable.status,
+      serviceType: ordersTable.serviceType,
       driverId: ordersTable.driverId,
       sourceUrl: ordersTable.sourceUrl,
       notes: ordersTable.notes,
@@ -152,6 +155,7 @@ router.patch("/:id", async (req, res) => {
 
   const updates: Record<string, unknown> = { updatedAt: new Date() };
   if (bodyParsed.data.status !== undefined) updates.status = bodyParsed.data.status;
+  if (bodyParsed.data.serviceType !== undefined) updates.serviceType = bodyParsed.data.serviceType;
   if (bodyParsed.data.driverId !== undefined) updates.driverId = bodyParsed.data.driverId;
   if (bodyParsed.data.notes !== undefined) updates.notes = bodyParsed.data.notes;
 

@@ -10,6 +10,7 @@ import AnalyticsPage from "@/pages/analytics";
 import SurveillancePage from "@/pages/surveillance";
 import RestaurantsPage from "@/pages/restaurants";
 import SafiRunnerPage from "@/pages/safi-runner";
+import ClientsPage from "@/pages/clients";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -29,6 +30,7 @@ function Router() {
       <Route path="/surveillance" component={SurveillancePage} />
       <Route path="/restaurants" component={RestaurantsPage} />
       <Route path="/safi-runner" component={SafiRunnerPage} />
+      <Route path="/clients" component={ClientsPage} />
       <Route path="/analytics" component={AnalyticsPage} />
       <Route component={NotFound} />
     </Switch>
