@@ -11,6 +11,8 @@ export interface Player {
   pseudo: string;
   phone: string;
   email?: string | null;
+  address?: string | null;
+  profilePhoto?: string | null;
   diamonds: number;
   score: number;
   gamesPlayed: number;

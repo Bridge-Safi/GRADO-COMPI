@@ -7,6 +7,8 @@ export const playersTable = pgTable("players", {
   pseudo: text("pseudo").notNull(),
   phone: text("phone").notNull().unique(),
   email: text("email"),
+  address: text("address"),
+  profilePhoto: text("profile_photo"),
   diamonds: integer("diamonds").notNull().default(0),
   score: integer("score").notNull().default(0),
   gamesPlayed: integer("games_played").notNull().default(0),

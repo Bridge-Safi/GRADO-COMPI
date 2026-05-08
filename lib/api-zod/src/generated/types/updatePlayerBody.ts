@@ -8,6 +8,8 @@
 
 export interface UpdatePlayerBody {
   pseudo?: string;
+  address?: string;
+  profilePhoto?: string;
   diamonds?: number;
   score?: number;
   gamesPlayed?: number;

@@ -10,6 +10,8 @@ export interface CreatePlayerBody {
   pseudo: string;
   phone: string;
   email?: string;
+  address?: string;
+  profilePhoto?: string;
   diamonds?: number;
   score?: number;
   gamesPlayed?: number;

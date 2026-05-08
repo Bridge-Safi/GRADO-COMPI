@@ -18,6 +18,16 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   useGetLeaderboard,
@@ -50,8 +60,9 @@ import {
   Gamepad2,
   Phone,
   Star,
-  TrendingUp,
-  ShoppingBag,
+  MapPin,
+  UserCheck,
+  Image as ImageIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -90,10 +101,31 @@ function ProgressBar({ value, max }: { value: number; max: number }) {
   );
 }
 
+function PlayerAvatar({ profilePhoto, pseudo, size = "md" }: { profilePhoto?: string | null; pseudo: string; size?: "sm" | "md" | "lg" }) {
+  const sizes = { sm: "w-8 h-8 text-xs", md: "w-10 h-10 text-sm", lg: "w-16 h-16 text-xl" };
+  if (profilePhoto) {
+    return (
+      <img
+        src={profilePhoto}
+        alt={pseudo}
+        className={cn(sizes[size], "rounded-full object-cover border border-white/10 shrink-0")}
+        onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+      />
+    );
+  }
+  return (
+    <div className={cn(sizes[size], "rounded-full bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center font-bold text-cyan-400 shrink-0")}>
+      {pseudo.charAt(0).toUpperCase()}
+    </div>
+  );
+}
+
 type PlayerForm = {
   pseudo: string;
   phone: string;
   email: string;
+  address: string;
+  profilePhoto: string;
   diamonds: string;
   score: string;
   gamesPlayed: string;
@@ -103,6 +135,8 @@ const emptyForm: PlayerForm = {
   pseudo: "",
   phone: "",
   email: "",
+  address: "",
+  profilePhoto: "",
   diamonds: "0",
   score: "0",
   gamesPlayed: "0",
@@ -114,6 +148,7 @@ export default function SafiRunnerPage() {
   const [addOpen, setAddOpen] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
   const [form, setForm] = useState<PlayerForm>(emptyForm);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: number; pseudo: string } | null>(null);
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ["/api/players"] });
@@ -143,9 +178,9 @@ export default function SafiRunnerPage() {
     },
   });
 
-  const { mutate: deletePlayer } = useDeletePlayer({
+  const { mutate: deletePlayer, isPending: isDeleting } = useDeletePlayer({
     mutation: {
-      onSuccess: () => { toast({ title: "Joueur supprimé" }); invalidate(); },
+      onSuccess: () => { toast({ title: "Membre supprimé" }); setDeleteTarget(null); invalidate(); },
       onError: () => toast({ title: "Erreur", variant: "destructive" }),
     },
   });
@@ -156,6 +191,8 @@ export default function SafiRunnerPage() {
         pseudo: form.pseudo,
         phone: form.phone,
         email: form.email || undefined,
+        address: form.address || undefined,
+        profilePhoto: form.profilePhoto || undefined,
         diamonds: Number(form.diamonds),
         score: Number(form.score),
         gamesPlayed: Number(form.gamesPlayed),
@@ -169,6 +206,8 @@ export default function SafiRunnerPage() {
       pseudo: p.pseudo,
       phone: p.phone,
       email: p.email ?? "",
+      address: p.address ?? "",
+      profilePhoto: p.profilePhoto ?? "",
       diamonds: String(p.diamonds),
       score: String(p.score),
       gamesPlayed: String(p.gamesPlayed),
@@ -181,6 +220,8 @@ export default function SafiRunnerPage() {
       id: editId,
       data: {
         pseudo: form.pseudo,
+        address: form.address || undefined,
+        profilePhoto: form.profilePhoto || undefined,
         diamonds: Number(form.diamonds),
         score: Number(form.score),
         gamesPlayed: Number(form.gamesPlayed),
@@ -217,7 +258,7 @@ export default function SafiRunnerPage() {
                 Ajouter un joueur
               </Button>
             </DialogTrigger>
-            <DialogContent className="glass border-white/10">
+            <DialogContent className="glass border-white/10 max-w-lg">
               <DialogHeader>
                 <DialogTitle className="font-display text-xl flex items-center gap-2">
                   <Gamepad2 className="w-5 h-5 text-cyan-400" />
@@ -239,15 +280,19 @@ export default function SafiRunnerPage() {
 
         {/* KPI Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <KpiCard icon={<Users className="w-5 h-5 text-cyan-400" />} label="Total joueurs" value={stats?.total ?? 0} color="text-cyan-400" sub="inscrits" />
+          <KpiCard icon={<Users className="w-5 h-5 text-cyan-400" />} label="Total inscrits" value={stats?.total ?? 0} color="text-cyan-400" sub="membres" />
           <KpiCard icon={<Wifi className="w-5 h-5 text-green-400" />} label="En ligne" value={stats?.online ?? 0} color="text-green-400" sub="connectés" />
           <KpiCard icon={<CheckCircle2 className="w-5 h-5 text-green-500" />} label="Menu payé" value={stats?.ready ?? 0} color="text-green-500" sub="60 000+ 💎" />
           <KpiCard icon={<AlertCircle className="w-5 h-5 text-amber-400" />} label="En attente" value={stats?.notReady ?? 0} color="text-amber-400" sub="doivent payer" />
         </div>
 
         {/* Tabs */}
-        <Tabs defaultValue="leaderboard" className="space-y-6">
-          <TabsList className="bg-black/40 border border-white/10 rounded-2xl p-1">
+        <Tabs defaultValue="members" className="space-y-6">
+          <TabsList className="bg-black/40 border border-white/10 rounded-2xl p-1 flex flex-wrap gap-1">
+            <TabsTrigger value="members" className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500/20 data-[state=active]:to-primary/20 data-[state=active]:text-white">
+              <UserCheck className="w-4 h-4 mr-2" />
+              Membres inscrits
+            </TabsTrigger>
             <TabsTrigger value="leaderboard" className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500/20 data-[state=active]:to-primary/20 data-[state=active]:text-white">
               <Trophy className="w-4 h-4 mr-2" />
               Classement
@@ -265,6 +310,95 @@ export default function SafiRunnerPage() {
               Gérer
             </TabsTrigger>
           </TabsList>
+
+          {/* ── MEMBRES INSCRITS ── */}
+          <TabsContent value="members">
+            <Card className="glass border-white/5">
+              <CardHeader className="p-5 pb-3 border-b border-white/5 flex flex-row items-center justify-between">
+                <CardTitle className="font-display flex items-center gap-2 text-xl">
+                  <UserCheck className="w-5 h-5 text-cyan-400" />
+                  Membres inscrits sur Bridge Eats
+                </CardTitle>
+                <Badge variant="outline" className="font-mono">{allPlayers?.length ?? 0} membres</Badge>
+              </CardHeader>
+              <CardContent className="p-0">
+                {!allPlayers || allPlayers.length === 0 ? (
+                  <EmptyState icon={<Users />} text="Aucun membre inscrit pour le moment." />
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 p-5">
+                    {allPlayers.map((player) => (
+                      <div
+                        key={player.id}
+                        className="relative group rounded-2xl border border-white/10 bg-black/30 p-4 flex flex-col gap-3 hover:border-cyan-500/30 hover:bg-black/50 transition-all"
+                      >
+                        {/* Delete button */}
+                        <button
+                          onClick={() => setDeleteTarget({ id: player.id, pseudo: player.pseudo })}
+                          className="absolute top-3 right-3 w-7 h-7 rounded-lg bg-red-500/0 hover:bg-red-500/20 border border-transparent hover:border-red-500/30 flex items-center justify-center text-muted-foreground hover:text-red-400 transition-all opacity-0 group-hover:opacity-100"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+
+                        {/* Top: Avatar + Name + Status */}
+                        <div className="flex items-center gap-3">
+                          <div className="relative shrink-0">
+                            <PlayerAvatar profilePhoto={player.profilePhoto} pseudo={player.pseudo} size="lg" />
+                            {player.isOnline && (
+                              <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-green-500 border-2 border-background animate-pulse" />
+                            )}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="font-display font-bold text-base truncate">{player.pseudo}</div>
+                            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground font-mono mt-0.5">
+                              <Phone className="w-3 h-3 shrink-0" />
+                              <span className="truncate">{player.phone}</span>
+                            </div>
+                            {player.address && (
+                              <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground font-mono mt-0.5">
+                                <MapPin className="w-3 h-3 shrink-0 text-amber-400" />
+                                <span className="truncate">{player.address}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Diamonds progress */}
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between">
+                            <DiamondBadge value={player.diamonds} className="text-sm" />
+                            <span className="text-[10px] font-mono text-muted-foreground">
+                              {Math.min(100, Math.round((player.diamonds / MENU_COST) * 100))}% du menu
+                            </span>
+                          </div>
+                          <ProgressBar value={player.diamonds} max={MENU_COST} />
+                        </div>
+
+                        {/* Footer: games + inscription date + status */}
+                        <div className="flex items-center justify-between pt-1 border-t border-white/5">
+                          <div className="flex items-center gap-3 text-[11px] text-muted-foreground font-mono">
+                            <span className="flex items-center gap-1">
+                              <Gamepad2 className="w-3 h-3" />
+                              {player.gamesPlayed} parties
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Star className="w-3 h-3 text-yellow-500" />
+                              {player.score.toLocaleString()} pts
+                            </span>
+                          </div>
+                          <StatusPayBadge missing={player.missing} />
+                        </div>
+
+                        {/* Inscription date */}
+                        <div className="text-[10px] text-muted-foreground font-mono">
+                          Inscrit {formatDistanceToNow(new Date(player.createdAt), { addSuffix: true, locale: fr })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           {/* ── LEADERBOARD ── */}
           <TabsContent value="leaderboard">
@@ -289,29 +423,18 @@ export default function SafiRunnerPage() {
                           player.rank <= 3 ? "bg-white/[0.02]" : ""
                         )}
                       >
-                        {/* Rank */}
                         <div className="w-8 flex justify-center shrink-0">
                           <RankIcon rank={player.rank} />
                         </div>
-
-                        {/* Avatar */}
-                        <div className={cn(
-                          "w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm shrink-0 border",
-                          player.rank === 1 ? "bg-yellow-500/20 border-yellow-500/40 text-yellow-300" :
-                          player.rank === 2 ? "bg-zinc-500/20 border-zinc-400/40 text-zinc-300" :
-                          player.rank === 3 ? "bg-amber-700/20 border-amber-600/40 text-amber-500" :
-                          "bg-cyan-500/10 border-cyan-500/20 text-cyan-400"
-                        )}>
-                          {player.pseudo.charAt(0).toUpperCase()}
+                        <div className="relative shrink-0">
+                          <PlayerAvatar profilePhoto={player.profilePhoto} pseudo={player.pseudo} size="sm" />
+                          {player.isOnline && (
+                            <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-green-500 border-2 border-background animate-pulse" />
+                          )}
                         </div>
-
-                        {/* Info */}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
                             <span className="font-display font-bold text-sm truncate">{player.pseudo}</span>
-                            {player.isOnline && (
-                              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse shrink-0" title="En ligne" />
-                            )}
                           </div>
                           <div className="flex items-center gap-3 mt-1">
                             <ProgressBar value={player.diamonds} max={MENU_COST} />
@@ -320,8 +443,6 @@ export default function SafiRunnerPage() {
                             </span>
                           </div>
                         </div>
-
-                        {/* Score + Diamonds */}
                         <div className="text-right shrink-0 space-y-0.5">
                           <div className="flex items-center justify-end gap-1.5 text-xs text-muted-foreground font-mono">
                             <Star className="w-3 h-3 text-yellow-500" />
@@ -361,9 +482,7 @@ export default function SafiRunnerPage() {
                       {online.map((player) => (
                         <div key={player.id} className="flex items-center gap-4 px-5 py-3.5 hover:bg-white/5 transition-colors">
                           <div className="relative shrink-0">
-                            <div className="w-9 h-9 rounded-full bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center font-bold text-cyan-400 text-sm">
-                              {player.pseudo.charAt(0).toUpperCase()}
-                            </div>
+                            <PlayerAvatar profilePhoto={player.profilePhoto} pseudo={player.pseudo} size="sm" />
                             <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-green-500 border-2 border-background animate-pulse" />
                           </div>
                           <div className="flex-1 min-w-0">
@@ -377,6 +496,12 @@ export default function SafiRunnerPage() {
                                 </span>
                               )}
                             </div>
+                            {player.address && (
+                              <div className="flex items-center gap-1 text-[11px] text-muted-foreground font-mono mt-0.5">
+                                <MapPin className="w-2.5 h-2.5 text-amber-400" />
+                                {player.address}
+                              </div>
+                            )}
                           </div>
                           <div className="text-right shrink-0 space-y-1">
                             <DiamondBadge value={player.diamonds} className="text-sm" />
@@ -398,7 +523,6 @@ export default function SafiRunnerPage() {
           {/* ── PAIEMENTS ── */}
           <TabsContent value="payment">
             <div className="space-y-5">
-              {/* Summary bar */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <Card className="glass border-green-500/20 bg-green-500/5">
                   <CardContent className="p-4 text-center">
@@ -430,7 +554,6 @@ export default function SafiRunnerPage() {
                 </Card>
               </div>
 
-              {/* Groups */}
               {PAYMENT_GROUPS.map((group) => {
                 const players = paymentSummary?.[group.key] ?? [];
                 if (players.length === 0) return null;
@@ -449,9 +572,7 @@ export default function SafiRunnerPage() {
                       <div className="divide-y divide-white/5">
                         {players.map((p) => (
                           <div key={p.id} className="flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors">
-                            <div className="w-8 h-8 rounded-full bg-black/40 border border-white/10 flex items-center justify-center text-xs font-bold text-muted-foreground shrink-0">
-                              {p.pseudo.charAt(0).toUpperCase()}
-                            </div>
+                            <PlayerAvatar profilePhoto={p.profilePhoto} pseudo={p.pseudo} size="sm" />
                             <div className="flex-1 min-w-0">
                               <div className="font-medium text-sm flex items-center gap-2">
                                 {p.pseudo}
@@ -532,16 +653,15 @@ export default function SafiRunnerPage() {
                             </div>
                           ) : (
                             <div className="flex items-center gap-4 px-5 py-3.5 hover:bg-white/5 transition-colors">
-                              <div className="w-9 h-9 rounded-full bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center font-bold text-cyan-400 text-sm shrink-0">
-                                {player.pseudo.charAt(0).toUpperCase()}
-                              </div>
+                              <PlayerAvatar profilePhoto={player.profilePhoto} pseudo={player.pseudo} size="sm" />
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2">
                                   <span className="font-medium text-sm truncate">{player.pseudo}</span>
                                   {player.isOnline && <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse shrink-0" />}
                                 </div>
-                                <div className="flex items-center gap-3 text-[11px] text-muted-foreground font-mono mt-0.5">
+                                <div className="flex items-center gap-3 text-[11px] text-muted-foreground font-mono mt-0.5 flex-wrap">
                                   <span><Phone className="w-2.5 h-2.5 inline mr-0.5" />{player.phone}</span>
+                                  {player.address && <span><MapPin className="w-2.5 h-2.5 inline mr-0.5 text-amber-400" />{player.address}</span>}
                                   <span><Gamepad2 className="w-2.5 h-2.5 inline mr-0.5" />{player.gamesPlayed} parties</span>
                                 </div>
                               </div>
@@ -566,11 +686,7 @@ export default function SafiRunnerPage() {
                                   size="icon"
                                   variant="ghost"
                                   className="w-7 h-7 text-muted-foreground hover:text-red-400"
-                                  onClick={() => {
-                                    if (confirm(`Supprimer ${player.pseudo} ?`)) {
-                                      deletePlayer({ id: player.id });
-                                    }
-                                  }}
+                                  onClick={() => setDeleteTarget({ id: player.id, pseudo: player.pseudo })}
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />
                                 </Button>
@@ -587,6 +703,32 @@ export default function SafiRunnerPage() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Delete confirmation dialog */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}>
+        <AlertDialogContent className="glass border-white/10">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-display flex items-center gap-2">
+              <Trash2 className="w-5 h-5 text-red-400" />
+              Supprimer ce membre ?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Tu vas supprimer définitivement <span className="font-bold text-white">{deleteTarget?.pseudo}</span> de Bridge Eats. Cette action est irréversible.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-white/10">Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteTarget && deletePlayer({ id: deleteTarget.id })}
+              disabled={isDeleting}
+              className="bg-red-500 hover:bg-red-600 text-white"
+            >
+              {isDeleting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Layout>
   );
 }
@@ -665,6 +807,18 @@ function PlayerFormFields({
           <Input placeholder="email@example.com" className="bg-black/30 border-white/10" {...field("email")} />
         </div>
       )}
+      <div className="col-span-2 space-y-1">
+        <Label className="text-xs text-muted-foreground uppercase tracking-widest flex items-center gap-1">
+          <MapPin className="w-3 h-3 text-amber-400" /> Adresse
+        </Label>
+        <Input placeholder="Rue, Ville..." className="bg-black/30 border-white/10" {...field("address")} />
+      </div>
+      <div className="col-span-2 space-y-1">
+        <Label className="text-xs text-muted-foreground uppercase tracking-widest flex items-center gap-1">
+          <ImageIcon className="w-3 h-3 text-cyan-400" /> Photo de profil (URL)
+        </Label>
+        <Input placeholder="https://..." className="bg-black/30 border-white/10" {...field("profilePhoto")} />
+      </div>
       <div className="space-y-1">
         <Label className="text-xs text-muted-foreground uppercase tracking-widest flex items-center gap-1">
           <Diamond className="w-3 h-3 text-cyan-400" /> Diamonds

@@ -10,6 +10,8 @@ export interface PlayerRanked {
   id: number;
   pseudo: string;
   phone: string;
+  address?: string | null;
+  profilePhoto?: string | null;
   diamonds: number;
   score: number;
   gamesPlayed: number;

@@ -77,7 +77,7 @@ router.get("/payment-summary", async (_req, res) => {
 
 // POST /players
 router.post("/", async (req, res) => {
-  const { pseudo, phone, email, diamonds, score, gamesPlayed } = req.body as Record<string, string | number>;
+  const { pseudo, phone, email, address, profilePhoto, diamonds, score, gamesPlayed } = req.body as Record<string, string | number>;
   if (!pseudo || !phone) {
     res.status(400).json({ error: "pseudo et phone sont requis" });
     return;
@@ -88,6 +88,8 @@ router.post("/", async (req, res) => {
       pseudo: String(pseudo),
       phone: String(phone),
       email: email ? String(email) : null,
+      address: address ? String(address) : null,
+      profilePhoto: profilePhoto ? String(profilePhoto) : null,
       diamonds: diamonds ? Number(diamonds) : 0,
       score: score ? Number(score) : 0,
       gamesPlayed: gamesPlayed ? Number(gamesPlayed) : 0,
@@ -96,6 +98,8 @@ router.post("/", async (req, res) => {
       target: playersTable.phone,
       set: {
         pseudo: String(pseudo),
+        address: address ? String(address) : null,
+        profilePhoto: profilePhoto ? String(profilePhoto) : null,
         diamonds: diamonds ? Number(diamonds) : 0,
         score: score ? Number(score) : 0,
         gamesPlayed: gamesPlayed ? Number(gamesPlayed) : 0,
@@ -109,10 +113,12 @@ router.post("/", async (req, res) => {
 // PATCH /players/:id
 router.patch("/:id", async (req, res) => {
   const id = Number(req.params.id);
-  const { pseudo, diamonds, score, gamesPlayed, isOnline } = req.body as Record<string, string | number | boolean>;
+  const { pseudo, address, profilePhoto, diamonds, score, gamesPlayed, isOnline } = req.body as Record<string, string | number | boolean>;
 
   const updates: Record<string, unknown> = { updatedAt: new Date() };
   if (pseudo !== undefined) updates.pseudo = pseudo;
+  if (address !== undefined) updates.address = address;
+  if (profilePhoto !== undefined) updates.profilePhoto = profilePhoto;
   if (diamonds !== undefined) updates.diamonds = Number(diamonds);
   if (score !== undefined) updates.score = Number(score);
   if (gamesPlayed !== undefined) updates.gamesPlayed = Number(gamesPlayed);
