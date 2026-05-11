@@ -45,6 +45,11 @@ export default function ChauffeurLogin() {
       const data = await res.json();
       if (data.success) {
         loginChauffeur({ id: data.id, name: data.name, phone: data.phone, role: "chauffeur" });
+        fetch(`${BASE}/api/drivers/${data.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "available" })
+        }).catch(() => {});
         if (isPushSupported()) subscribeToPush({ driverId: data.id }).catch(() => {
         });
         navigate("/chauffeur");

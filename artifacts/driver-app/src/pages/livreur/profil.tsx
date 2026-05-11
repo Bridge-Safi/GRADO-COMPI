@@ -17,7 +17,6 @@ import {
   Trophy,
   TrendingUp,
   Package,
-  Settings,
   LogOut,
   MapPin,
   Coins,
@@ -126,8 +125,6 @@ export default function LivreurProfil() {
   const BROWN_MID = colors.textMid;
   const BROWN_LIGHT = colors.textLight;
   const SAND = colors.bg;
-  const [isEditing, setIsEditing] = useState(false);
-  const [editStatus, setEditStatus] = useState("available");
   const { data: profile, isLoading } = useGetDeliverer(LIVREUR_ID, {
     query: { enabled: !!LIVREUR_ID, queryKey: getGetDelivererQueryKey(LIVREUR_ID) }
   });
@@ -136,21 +133,11 @@ export default function LivreurProfil() {
     { query: { enabled: !!LIVREUR_ID, queryKey: getGetDeliveryStatsQueryKey({ delivererId: LIVREUR_ID }), refetchInterval: 8e3 } }
   );
   const updateDeliverer = useUpdateDeliverer();
-  useEffect(() => {
-    if (profile) setEditStatus(profile.status);
-  }, [profile]);
-  const handleSave = () => {
-    updateDeliverer.mutate({ id: LIVREUR_ID, data: { status: editStatus } }, {
-      onSuccess: () => {
-        setIsEditing(false);
-        queryClient.invalidateQueries({ queryKey: getGetDelivererQueryKey(LIVREUR_ID) });
-        toast({ title: t("profile_updated_title"), description: t("profile_updated_desc") });
-      }
-    });
-  };
   const handleLogout = () => {
-    logoutLivreur();
-    navigate("/");
+    updateDeliverer.mutate({ id: LIVREUR_ID, data: { status: "offline" } }, {
+      onSuccess: () => { logoutLivreur(); navigate("/"); },
+      onError: () => { logoutLivreur(); navigate("/"); }
+    });
   };
   const getVehicleLabel = (type) => {
     const map = {
@@ -198,31 +185,18 @@ export default function LivreurProfil() {
                       backgroundImage: "repeating-linear-gradient(45deg, #D4880C 0, #D4880C 2px, transparent 0, transparent 50%)",
                       backgroundSize: "16px 16px"
                     } }, void 0, false),
-                    /* @__PURE__ */ jsxDEV("div", { className: "absolute top-3 right-3 flex gap-2", children: [
-                      /* @__PURE__ */ jsxDEV(
-                        "button",
-                        {
-                          onClick: () => isEditing ? handleSave() : setIsEditing(true),
-                          disabled: updateDeliverer.isPending,
-                          className: "w-8 h-8 rounded-full flex items-center justify-center",
-                          style: { background: "rgba(255,255,255,0.25)" },
-                          children: /* @__PURE__ */ jsxDEV(Settings, { className: "h-4 w-4 text-white" }, void 0, false)
-                        },
-                        void 0,
-                        false
-                      ),
-                      /* @__PURE__ */ jsxDEV(
+                    /* @__PURE__ */ jsxDEV("div", { className: "absolute top-3 right-3 flex gap-2", children: /* @__PURE__ */ jsxDEV(
                         "button",
                         {
                           onClick: handleLogout,
+                          disabled: updateDeliverer.isPending,
                           className: "w-8 h-8 rounded-full flex items-center justify-center",
                           style: { background: "rgba(255,255,255,0.15)" },
                           children: /* @__PURE__ */ jsxDEV(LogOut, { className: "h-4 w-4 text-white" }, void 0, false)
                         },
                         void 0,
                         false
-                      )
-                    ] }, void 0, true)
+                      ) }, void 0, false)
                   ]
                 },
                 void 0,
@@ -288,52 +262,7 @@ export default function LivreurProfil() {
                   ] }, void 0, true)
                 ] }, void 0, true),
                 /* @__PURE__ */ jsxDEV("div", { className: "mt-3 mb-4", children: /* @__PURE__ */ jsxDEV(StarRating, { value: profile.rating, textColor: BROWN, lightColor: BROWN_LIGHT, borderColor: BORDER }, void 0, false) }, void 0, false),
-                isEditing ? /* @__PURE__ */ jsxDEV("div", { className: "mb-3", children: [
-                  /* @__PURE__ */ jsxDEV("p", { className: "text-xs font-semibold mb-2", style: { color: BROWN_LIGHT }, children: t("settings") }, void 0, false),
-                  /* @__PURE__ */ jsxDEV("div", { className: "flex gap-2 flex-wrap", children: ["available", "busy", "offline"].map((s) => {
-                    const cfg = STATUS_CONFIG[s];
-                    cfg.label = s === "available" ? t("status_available") : s === "busy" ? t("status_busy") : t("status_offline");
-                    const active = editStatus === s;
-                    return /* @__PURE__ */ jsxDEV(
-                      "button",
-                      {
-                        onClick: () => setEditStatus(s),
-                        className: "px-3 py-1.5 rounded-xl text-sm font-semibold border transition-all",
-                        style: {
-                          background: active ? cfg.bg : "white",
-                          color: active ? cfg.color : BROWN_LIGHT,
-                          borderColor: active ? cfg.color + "80" : BORDER
-                        },
-                        children: [
-                          /* @__PURE__ */ jsxDEV(
-                            "span",
-                            {
-                              className: "inline-block w-2 h-2 rounded-full mr-1.5",
-                              style: { background: cfg.dot }
-                            },
-                            void 0,
-                            false
-                          ),
-                          cfg.label
-                        ]
-                      },
-                      s,
-                      true
-                    );
-                  }) }, void 0, false),
-                  /* @__PURE__ */ jsxDEV(
-                    "button",
-                    {
-                      onClick: handleSave,
-                      disabled: updateDeliverer.isPending,
-                      className: "mt-3 w-full py-2 rounded-xl font-bold text-sm text-white disabled:opacity-60",
-                      style: { background: TC },
-                      children: updateDeliverer.isPending ? "…" : t("save")
-                    },
-                    void 0,
-                    false
-                  )
-                ] }, void 0, true) : /* @__PURE__ */ jsxDEV("div", { className: "flex items-center gap-2", children: [
+                /* @__PURE__ */ jsxDEV("div", { className: "flex items-center gap-2", children: [
                   /* @__PURE__ */ jsxDEV(
                     "span",
                     {

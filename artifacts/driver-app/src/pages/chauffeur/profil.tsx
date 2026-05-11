@@ -3,7 +3,7 @@ import { jsxDEV, Fragment } from "react/jsx-dev-runtime";
 import { useState, useEffect } from "react";
 import { ChauffeurLayout } from "../../components/layout/ChauffeurLayout";
 import { useGetDriver, getGetDriverQueryKey, useUpdateDriver } from "@workspace/api-client-react";
-import { Car, Star, Navigation, Settings, CheckCircle2, LogOut } from "lucide-react";
+import { Car, Star, Navigation, CheckCircle2, LogOut } from "lucide-react";
 import { PhotoUpload } from "../../components/PhotoUpload";
 import { Skeleton } from "../../components/ui/skeleton";
 import { useQueryClient } from "@tanstack/react-query";
@@ -43,8 +43,6 @@ export default function ChauffeurProfil() {
   const { colors } = useTheme();
   const [, navigate] = useLocation();
   const DRIVER_ID = chauffeur?.id ?? 0;
-  const [isEditing, setIsEditing] = useState(false);
-  const [editStatus, setEditStatus] = useState("available");
   const BORDER = colors.border;
   const BROWN = colors.text;
   const BROWN_MID = colors.textMid;
@@ -53,24 +51,14 @@ export default function ChauffeurProfil() {
     query: { enabled: !!DRIVER_ID, queryKey: getGetDriverQueryKey(DRIVER_ID) }
   });
   const updateDriver = useUpdateDriver();
-  useEffect(() => {
-    if (profile) setEditStatus(profile.status);
-  }, [profile]);
-  const handleSave = () => {
+  const handleLogout = () => {
     updateDriver.mutate(
-      { id: DRIVER_ID, data: { status: editStatus } },
+      { id: DRIVER_ID, data: { status: "offline" } },
       {
-        onSuccess: () => {
-          setIsEditing(false);
-          queryClient.invalidateQueries({ queryKey: getGetDriverQueryKey(DRIVER_ID) });
-          toast({ title: t("profile_updated_title"), description: t("profile_updated_desc") });
-        }
+        onSuccess: () => { logoutChauffeur(); navigate("/"); },
+        onError: () => { logoutChauffeur(); navigate("/"); }
       }
     );
-  };
-  const handleLogout = () => {
-    logoutChauffeur();
-    navigate("/");
   };
   const STATUS_DISPLAY = {
     available: { label: t("status_online"), color: GREEN, bg: "#E4F5EC", dot: GREEN },
@@ -103,31 +91,18 @@ export default function ChauffeurProfil() {
                 backgroundImage: "repeating-linear-gradient(45deg, #C14B2A 0, #C14B2A 2px, transparent 0, transparent 50%)",
                 backgroundSize: "16px 16px"
               } }, void 0, false),
-              /* @__PURE__ */ jsxDEV("div", { className: "absolute top-3 right-3 flex gap-2", children: [
-                /* @__PURE__ */ jsxDEV(
-                  "button",
-                  {
-                    onClick: () => isEditing ? handleSave() : setIsEditing(true),
-                    disabled: updateDriver.isPending,
-                    className: "w-8 h-8 rounded-full flex items-center justify-center",
-                    style: { background: "rgba(255,255,255,0.25)" },
-                    children: /* @__PURE__ */ jsxDEV(Settings, { className: "h-4 w-4 text-white" }, void 0, false)
-                  },
-                  void 0,
-                  false
-                ),
-                /* @__PURE__ */ jsxDEV(
+              /* @__PURE__ */ jsxDEV("div", { className: "absolute top-3 right-3 flex gap-2", children: /* @__PURE__ */ jsxDEV(
                   "button",
                   {
                     onClick: handleLogout,
+                    disabled: updateDriver.isPending,
                     className: "w-8 h-8 rounded-full flex items-center justify-center",
                     style: { background: "rgba(255,255,255,0.15)" },
                     children: /* @__PURE__ */ jsxDEV(LogOut, { className: "h-4 w-4 text-white" }, void 0, false)
                   },
                   void 0,
                   false
-                )
-              ] }, void 0, true)
+                ) }, void 0, false)
             ]
           },
           void 0,
@@ -167,43 +142,7 @@ export default function ChauffeurProfil() {
             ] }, void 0, true)
           ] }, void 0, true),
           /* @__PURE__ */ jsxDEV("div", { className: "mt-3", children: /* @__PURE__ */ jsxDEV(StarRating, { value: profile.rating, textColor: BROWN }, void 0, false) }, void 0, false),
-          /* @__PURE__ */ jsxDEV("div", { className: "mt-4", children: isEditing ? /* @__PURE__ */ jsxDEV("div", { children: [
-            /* @__PURE__ */ jsxDEV("p", { className: "text-xs font-semibold mb-2", style: { color: BROWN_LIGHT }, children: t("settings") }, void 0, false),
-            /* @__PURE__ */ jsxDEV("div", { className: "flex gap-2 flex-wrap", children: ["available", "busy", "offline"].map((s) => {
-              const cfg = STATUS_DISPLAY[s];
-              const active = editStatus === s;
-              return /* @__PURE__ */ jsxDEV(
-                "button",
-                {
-                  onClick: () => setEditStatus(s),
-                  className: "px-3 py-1.5 rounded-xl text-sm font-semibold border transition-all",
-                  style: {
-                    background: active ? cfg.bg : colors.bgCard,
-                    color: active ? cfg.color : BROWN_LIGHT,
-                    borderColor: active ? cfg.color + "80" : BORDER
-                  },
-                  children: [
-                    /* @__PURE__ */ jsxDEV("span", { className: "inline-block w-2 h-2 rounded-full mr-1.5", style: { background: cfg.dot } }, void 0, false),
-                    cfg.label
-                  ]
-                },
-                s,
-                true
-              );
-            }) }, void 0, false),
-            /* @__PURE__ */ jsxDEV(
-              "button",
-              {
-                onClick: handleSave,
-                disabled: updateDriver.isPending,
-                className: "mt-3 w-full py-2 rounded-xl font-bold text-sm text-white disabled:opacity-60",
-                style: { background: GOLD },
-                children: updateDriver.isPending ? "…" : t("save")
-              },
-              void 0,
-              false
-            )
-          ] }, void 0, true) : /* @__PURE__ */ jsxDEV("div", { className: "flex items-center gap-2", children: [
+          /* @__PURE__ */ jsxDEV("div", { className: "mt-4", children: /* @__PURE__ */ jsxDEV("div", { className: "flex items-center gap-2", children: [
             /* @__PURE__ */ jsxDEV("span", { className: "inline-block w-2.5 h-2.5 rounded-full", style: { background: STATUS_DISPLAY[profile.status]?.dot ?? BROWN_LIGHT } }, void 0, false),
             /* @__PURE__ */ jsxDEV("span", { className: "text-sm font-medium", style: { color: STATUS_DISPLAY[profile.status]?.color ?? BROWN_LIGHT }, children: STATUS_DISPLAY[profile.status]?.label ?? profile.status }, void 0, false)
           ] }, void 0, true) }, void 0, false)

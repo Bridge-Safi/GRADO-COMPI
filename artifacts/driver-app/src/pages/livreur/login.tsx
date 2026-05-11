@@ -45,6 +45,11 @@ export default function LivreurLogin() {
       const data = await res.json();
       if (data.success) {
         loginLivreur({ id: data.id, name: data.name, phone: data.phone, role: "livreur" });
+        fetch(`${BASE}/api/deliverers/${data.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "available" })
+        }).catch(() => {});
         if (isPushSupported()) subscribeToPush({ delivererId: data.id }).catch(() => {
         });
         navigate("/livreur");
