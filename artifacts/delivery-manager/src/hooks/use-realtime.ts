@@ -7,6 +7,10 @@ type SSEEvent =
   | "delivery:created"
   | "delivery:updated"
   | "driver:updated"
+  | "player:created"
+  | "player:updated"
+  | "player:deleted"
+  | "player:online"
   | "ping"
   | "connected";
 
@@ -36,12 +40,24 @@ export function useRealtimeSync() {
         queryClient.invalidateQueries({ queryKey: ["getDashboardSummary"] });
       };
 
+      const invalidatePlayers = () => {
+        queryClient.invalidateQueries({ queryKey: ["/api/players"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/players/leaderboard"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/players/online"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/players/stats"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/players/payment-summary"] });
+      };
+
       const handlers: Partial<Record<SSEEvent, () => void>> = {
         "order:created": invalidateAll,
         "order:updated": invalidateOrders,
         "delivery:created": invalidateAll,
         "delivery:updated": invalidateOrders,
         "driver:updated": invalidateDrivers,
+        "player:created": invalidatePlayers,
+        "player:updated": invalidatePlayers,
+        "player:deleted": invalidatePlayers,
+        "player:online": invalidatePlayers,
       };
 
       for (const [event, handler] of Object.entries(handlers)) {

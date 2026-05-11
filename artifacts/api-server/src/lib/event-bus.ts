@@ -22,6 +22,10 @@ export type SSEEventType =
   | "delivery:created"
   | "delivery:updated"
   | "driver:updated"
+  | "player:created"
+  | "player:updated"
+  | "player:deleted"
+  | "player:online"
   | "ping";
 
 export function emitEvent(type: SSEEventType, data: unknown) {

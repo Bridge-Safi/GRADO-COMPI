@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { db, playersTable } from "@workspace/db";
 import { eq, desc, sql } from "drizzle-orm";
+import { emitEvent } from "../lib/event-bus";
 
 const router = Router();
 
@@ -107,6 +108,13 @@ router.post("/", async (req, res) => {
       },
     })
     .returning();
+  emitEvent("player:created", {
+    id: player.id,
+    pseudo: player.pseudo,
+    diamonds: player.diamonds,
+    score: player.score,
+  });
+
   res.status(201).json(fmt(player));
 });
 
@@ -137,6 +145,15 @@ router.patch("/:id", async (req, res) => {
     res.status(404).json({ error: "Joueur non trouvé" });
     return;
   }
+
+  emitEvent("player:updated", {
+    id: updated.id,
+    pseudo: updated.pseudo,
+    diamonds: updated.diamonds,
+    score: updated.score,
+    isOnline: updated.isOnline,
+  });
+
   res.json(fmt(updated));
 });
 
@@ -144,6 +161,7 @@ router.patch("/:id", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   const id = Number(req.params.id);
   await db.delete(playersTable).where(eq(playersTable.id, id));
+  emitEvent("player:deleted", { id });
   res.json({ ok: true });
 });
 
@@ -159,6 +177,13 @@ router.patch("/:id/ping", async (req, res) => {
     res.status(404).json({ error: "Joueur non trouvé" });
     return;
   }
+
+  emitEvent("player:online", {
+    id: updated.id,
+    pseudo: updated.pseudo,
+    isOnline: true,
+  });
+
   res.json(fmt(updated));
 });
 

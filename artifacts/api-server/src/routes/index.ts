@@ -17,6 +17,7 @@ import tripsRouter from "./trips";
 import pushRouter from "./push";
 import statsRouter from "./stats";
 import eventsRouter from "./events";
+import gameRouter from "./game";
 
 const router: IRouter = Router();
 
@@ -38,5 +39,6 @@ router.use("/trips", tripsRouter);
 router.use("/push", pushRouter);
 router.use("/stats", statsRouter);
 router.use("/events", eventsRouter);
+router.use("/game", gameRouter);
 
 export default router;
