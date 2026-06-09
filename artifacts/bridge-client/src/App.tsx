@@ -179,7 +179,7 @@ function DeliveryMap({onSet,onAddress,pin}:{
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 
 // URL du site livreur Bridge Logistique (où arrivent toutes les commandes)
-const DRIVER_APP_URL = 'https://406ae05e-3483-4224-927f-5b1b34d56fb4-00-1ym1ya1fn7mhc.worf.replit.dev';
+const DRIVER_APP_URL = '';
 // ⬇ URL encodée dans le QR de paiement — à remplacer par le lien de votre banque
 const BRIDGE_QR_PAY_URL = 'https://safi-bridge.ma/pay';
 
@@ -2439,17 +2439,19 @@ function CheckoutDrawer({cart,lang,onClose,onQty,profile,onClearCart,restaurantN
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify({
-          ref:orderRef,
-          service:'delivery',
+          orderNumber:orderRef,
+          serviceType:'nourriture',
           customerName:name.trim(),
           customerPhone:phone.trim(),
-          customerAddress:delivMode==='collect'?`Click & Collect — ${addr.trim()||'Plateau, Safi'}`:addr.trim(),
-          items,
-          total:Math.round(total*100)/100,
-          deliveryMode:delivMode,
-          paymentMethod,
-          restaurantName:restaurantName||null,
-          collectCode:delivMode==='collect'?collectCode:null,
+          deliveryAddress:delivMode==='collect'?`Click & Collect — ${addr.trim()||'Plateau, Safi'}`:addr.trim(),
+          items:JSON.stringify(items),
+          totalAmount:Math.round(total*100)/100,
+          notes:[
+            restaurantName?`🍽️ ${restaurantName}`:null,
+            `💳 ${paymentMethod}`,
+            delivMode==='collect'&&collectCode?`🏪 Click & Collect — Code: ${collectCode}`:null,
+          ].filter(Boolean).join(' | ')||undefined,
+          sourceUrl:window.location.origin,
         }),
       });
       // Deduct diamonds server-side if used
