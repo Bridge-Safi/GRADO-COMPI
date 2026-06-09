@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, ListOrdered, Users, BarChart3, Eye, Store, Gamepad2, UserCircle } from "lucide-react";
+import { LayoutDashboard, ListOrdered, Users, BarChart3, Eye, Store, Gamepad2, UserCircle, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NotificationBell } from "./notification-bell";
 
@@ -12,6 +12,7 @@ const NAV_ITEMS = [
   { href: "/clients", label: "Clients", icon: UserCircle },
   { href: "/safi-runner", label: "Safi Runner", icon: Gamepad2 },
   { href: "/analytics", label: "Analyses", icon: BarChart3 },
+  { href: "/announcements", label: "Email & Annonces", icon: Send },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {

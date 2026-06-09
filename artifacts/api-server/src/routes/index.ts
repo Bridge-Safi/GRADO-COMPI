@@ -18,6 +18,7 @@ import pushRouter from "./push";
 import statsRouter from "./stats";
 import eventsRouter from "./events";
 import gameRouter from "./game";
+import notificationsRouter from "./notifications";
 
 const router: IRouter = Router();
 
@@ -40,5 +41,6 @@ router.use("/push", pushRouter);
 router.use("/stats", statsRouter);
 router.use("/events", eventsRouter);
 router.use("/game", gameRouter);
+router.use("/notifications", notificationsRouter);
 
 export default router;

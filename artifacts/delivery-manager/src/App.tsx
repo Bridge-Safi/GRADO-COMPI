@@ -13,6 +13,7 @@ import SurveillancePage from "@/pages/surveillance";
 import RestaurantsPage from "@/pages/restaurants";
 import SafiRunnerPage from "@/pages/safi-runner";
 import ClientsPage from "@/pages/clients";
+import AnnouncementsPage from "@/pages/announcements";
 
 const queryClient = new QueryClient({
   defaultOptions: {

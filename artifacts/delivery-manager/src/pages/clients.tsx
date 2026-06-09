@@ -245,7 +245,8 @@ export default function ClientsPage() {
                                   )}
                                 </div>
                                 <div className="flex items-center gap-3 text-[11px] text-muted-foreground font-mono mt-0.5 flex-wrap">
-                                  <span className="flex items-center gap-1"><Phone className="w-2.5 h-2.5" />{client.phone}</span>
+                                  <a href={`tel:${client.phone}`} className="flex items-center gap-1 hover:text-white transition-colors"><Phone className="w-2.5 h-2.5 text-green-400" />{client.phone}</a>
+                                  {client.email && <a href={`mailto:${client.email}`} className="flex items-center gap-1 hover:text-amber-300 transition-colors text-amber-400/80">✉ {client.email}</a>}
                                   {client.address && <span className="flex items-center gap-1"><MapPin className="w-2.5 h-2.5 text-amber-400" />{client.address}</span>}
                                 </div>
                                 {client.notes && (
@@ -323,9 +324,9 @@ export default function ClientsPage() {
                           </div>
                           <div className="min-w-0">
                             <div className="font-display font-bold text-sm truncate">{c.name}</div>
-                            <div className="text-[11px] text-muted-foreground font-mono flex items-center gap-1">
-                              <Phone className="w-2.5 h-2.5" />{c.phone}
-                            </div>
+                            <a href={`tel:${c.phone}`} className="text-[11px] text-muted-foreground font-mono flex items-center gap-1 hover:text-green-400 transition-colors">
+                              <Phone className="w-2.5 h-2.5 text-green-400" />{c.phone}
+                            </a>
                           </div>
                         </div>
                         {c.address && (
