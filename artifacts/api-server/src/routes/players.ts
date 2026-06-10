@@ -265,6 +265,85 @@ router.get("/stats", async (_req, res) => {
   });
 });
 
+// GET /players/signups-by-day — inscriptions par jour depuis Supabase
+router.get("/signups-by-day", async (_req, res) => {
+  const players = await fetchSupaAll();
+  const byDay: Record<string, number> = {};
+  for (const p of players) {
+    const day = p.created_at.slice(0, 10);
+    byDay[day] = (byDay[day] ?? 0) + 1;
+  }
+  const rows = Object.entries(byDay)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([day, count]) => ({ day, count }));
+  res.json(rows);
+});
+
+// GET /players/management — vue détaillée pour le centre de management Grado
+router.get("/management", async (_req, res) => {
+  const players = await fetchSupaAll();
+  const now = new Date();
+  const d7 = new Date(now.getTime() - 7 * 86400000);
+  const d30 = new Date(now.getTime() - 30 * 86400000);
+
+  const enriched = players.map(p => {
+    const diamonds = p.diamonds_collected ?? 0;
+    const missing = Math.max(0, MENU_COST - diamonds);
+    const progressPct = Math.min(100, Math.round((diamonds / MENU_COST) * 100));
+    const updatedAt = new Date(p.updated_at ?? p.created_at);
+    const createdAt = new Date(p.created_at);
+    let subscriptionStatus: "subscribed" | "close" | "active" | "inactive";
+    if (diamonds >= MENU_COST) subscriptionStatus = "subscribed";
+    else if (diamonds >= MENU_COST * 0.5) subscriptionStatus = "close";
+    else if (updatedAt > d7) subscriptionStatus = "active";
+    else subscriptionStatus = "inactive";
+
+    return {
+      id: p.id,
+      username: p.nickname ?? p.username ?? p.id.slice(0, 8),
+      rawUsername: p.username,
+      diamonds,
+      missing,
+      amountMAD: Math.ceil(missing / DIAMONDS_TO_MAD),
+      progressPct,
+      sardinesPoints: p.sardines_points ?? 0,
+      sardinesCount: p.sardines_count ?? 0,
+      periodDiamonds: p.period_diamonds ?? 0,
+      subscriptionStatus,
+      lastActivity: p.updated_at ?? p.created_at,
+      joinedAt: p.created_at,
+      isNew: createdAt > d7,
+      isActive30d: updatedAt > d30,
+      isActive7d: updatedAt > d7,
+    };
+  });
+
+  const subscribed = enriched.filter(p => p.subscriptionStatus === "subscribed").length;
+  const close = enriched.filter(p => p.subscriptionStatus === "close").length;
+  const active7d = enriched.filter(p => p.isActive7d).length;
+  const active30d = enriched.filter(p => p.isActive30d).length;
+  const newThisWeek = enriched.filter(p => p.isNew).length;
+  const withDiamonds = enriched.filter(p => p.diamonds > 0).length;
+  const totalDiamonds = enriched.reduce((s, p) => s + p.diamonds, 0);
+  const totalRevenuePotential = enriched.reduce((s, p) => s + p.amountMAD, 0);
+
+  res.json({
+    summary: {
+      total: players.length,
+      subscribed,
+      close,
+      active7d,
+      active30d,
+      newThisWeek,
+      withDiamonds,
+      totalDiamonds,
+      menuCost: MENU_COST,
+      totalRevenuePotential,
+    },
+    members: enriched.sort((a, b) => b.diamonds - a.diamonds),
+  });
+});
+
 function fmt(p: typeof playersTable.$inferSelect) {
   const missing = Math.max(0, MENU_COST - p.diamonds);
   return {
