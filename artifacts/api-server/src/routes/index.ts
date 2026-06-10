@@ -19,6 +19,7 @@ import statsRouter from "./stats";
 import eventsRouter from "./events";
 import gameRouter from "./game";
 import notificationsRouter from "./notifications";
+import livreurRouter from "./livreur";
 
 const router: IRouter = Router();
 
@@ -42,5 +43,6 @@ router.use("/stats", statsRouter);
 router.use("/events", eventsRouter);
 router.use("/game", gameRouter);
 router.use("/notifications", notificationsRouter);
+router.use("/livreur", livreurRouter);
 
 export default router;
